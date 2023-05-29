@@ -1,0 +1,30 @@
+{
+  "name": "voss2000-wingetpkg",
+  "version": "1.0.0",
+  "author": "voss2000",
+  "license": "Apache-2.0",
+  "summary": "Type and Provider to install Software via Winget",
+  "source": "",
+  "project_page": ""
+  "tags": ["winget"],
+
+  "dependencies": [
+  ],
+  
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "windows",
+      "operatingsystemrelease": [
+        "2019",
+        "10"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 6.21.0 < 8.0.0"
+    }
+  ],
+  "pdk-version": "2.7.1"
+}
