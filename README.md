@@ -1,117 +1,48 @@
 # WinGet
 
-Welcome to your new module. A short overview of the generated parts can be found
-in the [PDK documentation][1].
-
-The README template below provides a starting point with details about what
-information to include in your README.
-
-## Table of Contents
-
-1. [Description](#description)
-1. [Setup - The basics of getting started with WinGet](#setup)
-    * [What WinGet affects](#what-WinGet-affects)
-    * [Setup requirements](#setup-requirements)
-    * [Beginning with WinGet](#beginning-with-WinGet)
-1. [Usage - Configuration options and additional functionality](#usage)
-1. [Limitations - OS compatibility, etc.](#limitations)
-1. [Development - Guide for contributing to the module](#development)
-
-## Description
-
-Briefly tell users why they might want to use your module. Explain what your
-module does and what kind of problems users can solve with it.
-
-This should be a fairly short description helps the user decide if your module
-is what they want.
-
-## Setup
-
-### What WinGet affects **OPTIONAL**
-
-If it's obvious what your module touches, you can skip this section. For
-example, folks can probably figure out that your mysql_instance module affects
-their MySQL instances.
-
-If there's more that they should know about, though, this is the place to
-mention:
-
-* Files, packages, services, or operations that the module will alter, impact,
-  or execute.
-* Dependencies that your module automatically installs.
-* Warnings or other important notices.
-
-### Setup Requirements **OPTIONAL**
-
-If your module requires anything extra before setting up (pluginsync enabled,
-another module, etc.), mention it here.
-
-If your most recent release breaks compatibility or requires particular steps
-for upgrading, you might want to include an additional "Upgrading" section here.
-
-### Beginning with WinGet
-
-The very basic steps needed for a user to get the module up and running. This
-can include setup steps, if necessary, or it can be an example of the most basic
-use of the module.
+This Module contains a Resource and Provider to install Software via Winget.
 
 ## Usage
 
-Include usage examples for common use cases in the **Usage** section. Show your
-users how to use your module to solve problems, and be sure to include code
-examples. Include three to five examples of the most important or common tasks a
-user can accomplish with your module. Show users how to accomplish more complex
-tasks that involve different types, classes, and functions working in tandem.
+Simply use the Resource like this:
 
+   wingetpkg {'Microsoft.PowerToys':
+      ensure => present,
+      version => 'latest',
+   }
+
+The title of the Resource is the id of the Winget package
+
+## Setup
+
+Of course you will need Windows for that, and an installed and working Winget-Command.
+Maybe you can install it on older Versions, but Winget is includes in Windows since
+Windows 10 1709 (Build 16299). You can download and install it manually via 
+[Github Releases]https://github.com/microsoft/winget-cli/releases).
+ 
 ## Reference
 
-This section is deprecated. Instead, add reference information to your code as
-Puppet Strings comments, and then use Strings to generate a REFERENCE.md in your
-module. For details on how to add code comments and generate documentation with
-Strings, see the [Puppet Strings documentation][2] and [style guide][3].
+The following Options exists:
 
-If you aren't ready to use Strings yet, manually create a REFERENCE.md in the
-root of your module directory and list out each of your module's classes,
-defined types, facts, functions, Puppet tasks, task plans, and resource types
-and providers, along with the parameters for each.
+ensure => :present, :installed, :absent
+version => <version> or 'latest'
 
-For each element (class, defined type, function, and so on), list:
+Optional:
 
-* The data type, if applicable.
-* A description of what the element does.
-* Valid values, if the data type doesn't make it obvious.
-* Default value, if any.
+fastupgrade => (default: 'yes') 
+Use this Param with 'no' to turn of the Upgrade-Command of WinGet. This makes sence for example for 
+the "Visual C Redistibutables", which creates dublicates on update. Also Some Packages reports
+an incompatible installer for upgrade. With this Option you have a workaround.
 
-For example:
+   wingetpkg {'Microsoft.VCRedist.2013.x64':
+      ensure => present,
+      version => 'latest',
+      fastupgrade: 'no'
+   }
 
-```
-### `pet::cat`
-
-#### Parameters
-
-##### `meow`
-
-Enables vocalization in your cat. Valid options: 'string'.
-
-Default: 'medium-loud'.
-```
 
 ## Limitations
 
-In the Limitations section, list any incompatibilities, known issues, or other
-warnings.
+Please keep in mind that winget is not really stable, but usable. I have seen a lot of problem 
+related to winget as i have developed this Module.
 
-## Development
-
-In the Development section, tell other users the ground rules for contributing
-to your project and how they should submit their work.
-
-## Release Notes/Contributors/Etc. **Optional**
-
-If you aren't using changelog, put your release notes here (though you should
-consider using changelog). You can also add any additional sections you feel are
-necessary or important to include here. Please use the `##` header.
-
-[1]: https://puppet.com/docs/pdk/latest/pdk_generating_modules.html
-[2]: https://puppet.com/docs/puppet/latest/puppet_strings.html
-[3]: https://puppet.com/docs/puppet/latest/puppet_strings_style.html
