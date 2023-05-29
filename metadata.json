@@ -4,8 +4,8 @@
   "author": "voss2000",
   "license": "Apache-2.0",
   "summary": "Type and Provider to install Software via Winget",
-  "source": "",
-  "project_page": ""
+  "source": "https://github.com/VoSs2o0o/WinGetPgk",
+  "project_page": "https://github.com/VoSs2o0o/WinGetPgk"
   "tags": ["winget"],
 
   "dependencies": [
