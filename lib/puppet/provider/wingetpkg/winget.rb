@@ -214,8 +214,13 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
     cmdresult.split("\n").collect do |line|
       match = line.match(/(\w+\s+)(\w+\s+)(\w+\s+)([a-zA-Zü]+\s+)(\w+)$/)
       match2 = line.match(/(\w+\s+)(\w+\s+)(\w+\s+)(\w+)$/)
-      if match or match2
-        match.captures.each do |capture|
+      if match
+        resmatch = match
+      else
+        resmatch = match2
+      end
+      if resmatch
+        resmatch.captures.each do |capture|
           if result.length == 0
             result.append(0)
             result.append(capture.length)
