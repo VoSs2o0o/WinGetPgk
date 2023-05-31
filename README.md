@@ -50,8 +50,8 @@ With this Option you have a workaround.
 
 ## Limitations
 
-Please keep in mind that winget is not really stable, but usable. I have seen a lot of problem 
-related to winget as i have developed this Module.
+Please keep in mind that winget is not really stable, but usable. I have seen a lot of problems 
+related to winget when i have developed this Module.
 
 ## misc
 
