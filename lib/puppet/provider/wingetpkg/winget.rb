@@ -33,7 +33,12 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
         match = pkg[:fullname].match /.+? .*(\d+\.\d+(\.\d+){1,2})/
         if match
           pkg[:version] = match[1]
+          pkg[:orgversion] = match[1]
         end
+      end
+      
+      if pkg[:latestver] == "" or pkg[:latestver] == pkg[:version]
+        pkg[:version] = "latest"
       end
     end
 
@@ -42,6 +47,7 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
 
   def create
     debug("wingetprovider->create")
+    notice(">>Install package.")
     if resource[:version] and resource[:version] != "latest" and resource[:version] != "installed"
       self.class._wgetexec('install', '--disable-interactivity', '--silent', '--accept-package-agreements', "--exact", "--id", resource[:name], "--version",  resource[:version])
     else
@@ -59,6 +65,7 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
     if _pkg_exists?(resource[:name], value)
       if (@property_hash[:ensure] == :present or @property_hash[:version] == "Unknown") and resource[:version] == "latest" \
           and resource[:fastupgrade] == :yes #fastupgrade, upgdating app
+        notice(">>Upgrade package.")
         _do_upgrade
         @property_hash[:version] = value
       else  #do an uninstall, cause sometimes installer incompatible
@@ -66,6 +73,10 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
           warning("From Unknown -> #{value} not possible, use 'latest' with 'fastupgrade' or do it manually.")
           return
         end
+        if @property_hash[:orgversion] == value #check without 'latest'
+          return
+        end
+        notice(">>change package from #{@property_hash[:version]} to #{value}...")
         destroy
         @property_hash[:version] = value
         create
@@ -78,6 +89,7 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
 
   def destroy
     debug("wingetprovider->destroy")
+    notice(">>Uninstall package.")
     self.class._wgetexec('uninstall', '--disable-interactivity', '--accept-source-agreements', "--id",  resource[:name],"--exact")
     @property_hash[:ensure] = :absent
   end
@@ -250,18 +262,12 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
         next
       end
 
-      if avail != ""
-        latestver = avail
-      else
-        latestver = version
-        version = "latest"
-      end
-
       result.append({:name   => name,
                      :fullname => fullname,
                      :ensure => :present,
                      :version => version,
-                     :latestver => latestver,
+                     :orgversion => version,
+                     :latestver => avail,
                     })
     end
     #debug("end")

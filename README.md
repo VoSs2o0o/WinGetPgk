@@ -33,9 +33,11 @@ version => <version> or 'latest'
 ### Optional:
 
 fastupgrade => (default: 'yes') 
-Use this Param with 'no' to turn of the Upgrade-Command of WinGet. This makes sence for example for 
-the "Visual C Redistibutables", which creates dublicates on update. Also Some Packages reports
-an incompatible installer for upgrade. With this Option you have a workaround.
+Use this Param with 'no' to turn of the Upgrade-Command of WinGet. This makes sence e.g. for 
+the "Visual C Redistibutables", which creates dublicates on update, and confuses Winget. 
+If this happens, please uninstall the doubled version manually, andd try it again.
+Also some Packages reports an incompatible installer for upgrade. 
+With this Option you have a workaround.
 
 ```
    wingetpkg {'Microsoft.VCRedist.2013.x64':
@@ -62,7 +64,7 @@ puppet resource wingetpkg
 to view the currently detected packages, and of course:
 
 ```
-puppet apply --debug
+puppet apply <manifest> --debug
 ```
 
 to view some debug messages
