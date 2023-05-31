@@ -51,3 +51,18 @@ an incompatible installer for upgrade. With this Option you have a workaround.
 Please keep in mind that winget is not really stable, but usable. I have seen a lot of problem 
 related to winget as i have developed this Module.
 
+## misc
+
+You have a little more insight how it works, if you use:
+
+```
+puppet resource wingetpkg
+```
+
+to view the currently detected packages, and of course:
+
+```
+puppet apply --debug
+```
+
+to view some debug messages

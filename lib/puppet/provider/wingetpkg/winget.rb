@@ -18,7 +18,7 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
     debug("wingetprovider->self.prefetch")
     packages = instances
     resources.keys.each do |name|
-      if provider = packages.find{ |pkg| pkg.name == name }
+      if (provider = packages.find { |pkg| pkg.name == name })
         resources[name].provider = provider
       end
     end
@@ -26,44 +26,18 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
 
   def self.instances
     debug("wingetprovider->self.instances")
-    raw_packages = _wgetexec('list','--disable-interactivity', '--accept-source-agreements')
+    packages = self._get_packages
 
-    col_cfg = _get_columnconfig(raw_packages)
-    if col_cfg.length < BUGGY_COL_SPLITS
-      err("Cannot read results from WinGet!")
-    end
-
-    packages = _get_packages(raw_packages, col_cfg)
-    if col_cfg.length >= ALL_COL_SPLITS
-
-      return packages.collect { |package| new(package)}
-    end
-
-    #due to a bug, read updates separately
-    raw_upgrades = _wgetexec('upgrade','--disable-interactivity', '--include-unknown')
-    col_upgrade_cfg = _get_columnconfig(raw_upgrades)
-    if col_upgrade_cfg == 0
-      return packages
-    end
-
-    if col_upgrade_cfg.length  < ALL_COL_SPLITS
-      err("Cannot read results from WinGet!")
-    end
-
-    upgrade_packages = _get_packages(raw_upgrades, col_upgrade_cfg)
-    upgrade_packagesh = upgrade_packages.to_h do |package|
-      [package[:name], package]
-    end
-
-    result = packages.collect do |package|
-      if upgrade_packagesh.key?(package[:name])
-        package[:latestver] = upgrade_packagesh[package[:name]][:latestver]
+    packages.each do |pkg|
+      if pkg[:version].downcase == 'unknown'
+        match = pkg[:fullname].match /.+? .*(\d+\.\d+(\.\d+){1,2})/
+        if match
+          pkg[:version] = match[1]
+        end
       end
-
-      new(package)
     end
 
-    result
+    return packages.collect { |pkg| new(pkg)}
   end
 
   def create
@@ -122,6 +96,48 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
   end
 
   private
+
+  def self._get_packages
+    debug("wingetprovider->self._get_packages")
+    raw_packages = _wgetexec('list','--disable-interactivity', '--accept-source-agreements')
+
+    col_cfg = _get_columnconfig(raw_packages)
+    if col_cfg.length < BUGGY_COL_SPLITS
+      err("Cannot read results from WinGet!")
+    end
+
+    packages = _get_rawpackages(raw_packages, col_cfg)
+    if col_cfg.length >= ALL_COL_SPLITS
+      #return packages.collect { |package| new(package)}
+      return packages
+    end
+
+    #due to a bug, read updates separately
+    raw_upgrades = _wgetexec('upgrade','--disable-interactivity', '--include-unknown')
+    col_upgrade_cfg = _get_columnconfig(raw_upgrades)
+    if col_upgrade_cfg == 0
+      return packages
+    end
+
+    if col_upgrade_cfg.length  < ALL_COL_SPLITS
+      err("Cannot read results from WinGet!")
+    end
+
+    upgrade_packages = _get_rawpackages(raw_upgrades, col_upgrade_cfg)
+    upgrade_packagesh = upgrade_packages.to_h do |package|
+      [package[:name], package]
+    end
+
+    result = packages.collect do |package|
+      if upgrade_packagesh.key?(package[:name])
+        package[:latestver] = upgrade_packagesh[package[:name]][:latestver]
+      end
+
+      package
+    end
+
+    result
+  end
 
   def self._winget_path
     install_location = nil
@@ -201,8 +217,8 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
     end
   end
 
-  def self._get_packages(cmdresult, col_cfg)
-    debug("wingetprovider->_get_packages")
+  def self._get_rawpackages(cmdresult, col_cfg)
+    debug("wingetprovider->_get_rawpackages")
     skipped_header = false
     result = []
     cmdresult.split("\n").collect do |line|
@@ -218,7 +234,7 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
       end
 
       #debug("line: #{line}")
-      #fullname = line[col_cfg[0]..col_cfg[1]-1].to_s.strip
+      fullname = line[col_cfg[0]..col_cfg[1]-1].to_s.strip
       name = line[col_cfg[1]..col_cfg[2]-1].to_s.strip
       version = line[col_cfg[2]..col_cfg[3]-1].to_s.strip
       version = version.gsub(">", "")
@@ -242,6 +258,7 @@ Puppet::Type.type(:wingetpkg).provide(:winget) do
       end
 
       result.append({:name   => name,
+                     :fullname => fullname,
                      :ensure => :present,
                      :version => version,
                      :latestver => latestver,
